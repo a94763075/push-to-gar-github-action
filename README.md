@@ -1,4 +1,4 @@
-# Push Docker Image to Google Artifact Registry (GAR) using GitHub Actions
+<img width="867" alt="截圖 2024-07-16 下午6 02 37" src="https://github.com/user-attachments/assets/a61a96fd-d273-486c-b29d-2b246f3e4f79"># Push Docker Image to Google Artifact Registry (GAR) using GitHub Actions
 
 This GitHub Action builds and pushes a Docker image to Google Artifact Registry.
 
@@ -44,3 +44,8 @@ jobs:
           dockerfile: './Dockerfile'
           build_args: 'ARG1=value1,ARG2=value2'
 
+
+## Find
+
+You can find project_id, registry, repository, image_name on Artifact Registry that you created
+<img width="867" alt="截圖 2024-07-16 下午6 02 37" src="https://github.com/user-attachments/assets/818d5781-f97d-43d1-8d73-151a85460b4c">
