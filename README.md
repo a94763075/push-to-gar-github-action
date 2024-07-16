@@ -33,7 +33,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Push Docker img to GAR
-        uses: ./.github/actions/push-docker-gar
+        uses: a94763075/push-to-gar-github-action@v0.1.0
         with:
           gcloud_service_key: ${{ secrets.GCLOUD_SERVICE_KEY }}
           project_id: ${{ secrets.GCP_PROJECT_ID }}
