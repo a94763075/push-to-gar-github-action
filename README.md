@@ -1,4 +1,4 @@
-<img width="867" alt="截圖 2024-07-16 下午6 02 37" src="https://github.com/user-attachments/assets/a61a96fd-d273-486c-b29d-2b246f3e4f79"># Push Docker Image to Google Artifact Registry (GAR) using GitHub Actions
+# Push Docker Image to Google Artifact Registry (GAR) using GitHub Actions
 
 This GitHub Action builds and pushes a Docker image to Google Artifact Registry.
 
@@ -43,7 +43,7 @@ jobs:
           image_tags: 'latest,stable'
           dockerfile: './Dockerfile'
           build_args: 'ARG1=value1,ARG2=value2'
-
+```
 
 ## Find
 
