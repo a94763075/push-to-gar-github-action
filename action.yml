@@ -1,0 +1,60 @@
+name: 'Push Docker Image to GAR'
+description: 'Builds and pushes a Docker image to Google Artifact Registry'
+inputs:
+  gcloud_service_key:
+    description: 'The GCP service account key in base64 encoded JSON'
+    required: true
+  project_id:
+    description: 'The GCP project ID'
+    required: true
+  registry:
+    description: 'The GAR registry location'
+    required: true
+  repository:
+    description: 'The GAR repository name'
+    required: true
+  image_name:
+    description: 'The name of the Docker image'
+    required: true
+  image_tags:
+    description: 'Comma-separated list of tags for the Docker image'
+    required: true
+  dockerfile:
+    description: 'Path to the Dockerfile'
+    required: true
+  build_args:
+    description: 'Build arguments for Docker'
+    required: false
+runs:
+  using: 'composite'
+  steps:
+    - name: Authenticate to GCP
+      uses: google-github-actions/auth@v1
+      with:
+        credentials_json: ${{ inputs.gcloud_service_key }}
+
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v1
+
+    - name: Configure Docker Client for Gcloud
+      run: gcloud auth configure-docker ${{ inputs.registry }} --quiet
+      shell: bash
+
+    - name: Build Docker Image
+      run: |
+        DOCKER_BUILD_ARGS=""
+        IFS=',' read -ra ARGS <<< "${{ inputs.build_args }}"
+        for arg in "${ARGS[@]}"; do
+          DOCKER_BUILD_ARGS="$DOCKER_BUILD_ARGS --build-arg $arg"
+        done
+        docker build . -f ${{ inputs.dockerfile }} -t ${{ inputs.registry }}/${{ inputs.project_id }}/${{ inputs.repository }}/${{ inputs.image_name }}:staging $DOCKER_BUILD_ARGS
+      shell: bash
+
+    - name: Push Docker Image
+      run: |
+        IFS=',' read -ra TAGS <<< "${{ inputs.image_tags }}"
+        for tag in "${TAGS[@]}"; do
+          docker tag ${{ inputs.registry }}/${{ inputs.project_id }}/${{ inputs.repository }}/${{ inputs.image_name }}:staging ${{ inputs.registry }}/${{ inputs.project_id }}/${{ inputs.repository }}/${{ inputs.image_name }}:$tag
+          docker push ${{ inputs.registry }}/${{ inputs.project_id }}/${{ inputs.repository }}/${{ inputs.image_name }}:$tag
+        done
+      shell: bash
