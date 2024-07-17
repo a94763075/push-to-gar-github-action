@@ -25,6 +25,9 @@ inputs:
   build_args:
     description: 'Build arguments for Docker'
     required: false
+  target:
+    description: 'Build target for Docker'
+    required: false
 runs:
   using: 'composite'
   steps:
@@ -47,14 +50,19 @@ runs:
         for arg in "${ARGS[@]}"; do
           DOCKER_BUILD_ARGS="$DOCKER_BUILD_ARGS --build-arg $arg"
         done
-        docker build . -f ${{ inputs.dockerfile }} -t ${{ inputs.registry }}/${{ inputs.project_id }}/${{ inputs.repository }}/${{ inputs.image_name }}:staging $DOCKER_BUILD_ARGS
+        TARGET_ARG=""
+        if [ ! -z "${{ inputs.target }}" ]; then
+          TARGET_ARG="--target ${{ inputs.target }}"
+        fi
+        TEMP_IMAGE_NAME="${{ inputs.registry }}/${{ inputs.project_id }}/${{ inputs.repository }}/${{ inputs.image_name }}:temp"
+        docker build $TARGET_ARG . -f ${{ inputs.dockerfile }} -t $TEMP_IMAGE_NAME $DOCKER_BUILD_ARGS
       shell: bash
 
     - name: Push Docker Image
       run: |
         IFS=',' read -ra TAGS <<< "${{ inputs.image_tags }}"
         for tag in "${TAGS[@]}"; do
-          docker tag ${{ inputs.registry }}/${{ inputs.project_id }}/${{ inputs.repository }}/${{ inputs.image_name }}:staging ${{ inputs.registry }}/${{ inputs.project_id }}/${{ inputs.repository }}/${{ inputs.image_name }}:$tag
+          docker tag $TEMP_IMAGE_NAME ${{ inputs.registry }}/${{ inputs.project_id }}/${{ inputs.repository }}/${{ inputs.image_name }}:$tag
           docker push ${{ inputs.registry }}/${{ inputs.project_id }}/${{ inputs.repository }}/${{ inputs.image_name }}:$tag
         done
       shell: bash
