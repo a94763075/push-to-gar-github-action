@@ -61,6 +61,7 @@ runs:
 
     - name: Push Docker Image
       run: |
+        TEMP_IMAGE_NAME="${{ inputs.registry }}/${{ inputs.project_id }}/${{ inputs.repository }}/${{ inputs.image_name }}:temp"
         echo "Pushing Docker image with TEMP_IMAGE_NAME: $TEMP_IMAGE_NAME"
         if [ -z "$TEMP_IMAGE_NAME" ]; then
           echo "Error: TEMP_IMAGE_NAME is not set."
