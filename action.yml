@@ -1,4 +1,4 @@
-name: 'Push Docker img to GAR by github action'
+name: 'Push Docker Image to GAR'
 description: 'Builds and pushes a Docker image to Google Artifact Registry'
 inputs:
   gcloud_service_key:
@@ -25,9 +25,10 @@ inputs:
   build_args:
     description: 'Build arguments for Docker'
     required: false
-  target:
-    description: 'Build target for Docker'
+  stage:
+    description: 'The stage of the deployment'
     required: false
+    default: 'dev'
 runs:
   using: 'composite'
   steps:
@@ -50,27 +51,14 @@ runs:
         for arg in "${ARGS[@]}"; do
           DOCKER_BUILD_ARGS="$DOCKER_BUILD_ARGS --build-arg $arg"
         done
-        TARGET_ARG=""
-        if [ ! -z "${{ inputs.target }}" ]; then
-          TARGET_ARG="--target ${{ inputs.target }}"
-        fi
-        TEMP_IMAGE_NAME="${{ inputs.registry }}/${{ inputs.project_id }}/${{ inputs.repository }}/${{ inputs.image_name }}:temp"
-        echo "Building Docker image with TEMP_IMAGE_NAME: $TEMP_IMAGE_NAME"
-        docker build $TARGET_ARG . -f ${{ inputs.dockerfile }} -t $TEMP_IMAGE_NAME $DOCKER_BUILD_ARGS
+        docker build . -f ${{ inputs.dockerfile }} -t ${{ inputs.registry }}/${{ inputs.project_id }}/${{ inputs.repository }}/${{ inputs.image_name }}:${{ inputs.stage }} $DOCKER_BUILD_ARGS
       shell: bash
 
     - name: Push Docker Image
       run: |
-        TEMP_IMAGE_NAME="${{ inputs.registry }}/${{ inputs.project_id }}/${{ inputs.repository }}/${{ inputs.image_name }}:temp"
-        echo "Pushing Docker image with TEMP_IMAGE_NAME: $TEMP_IMAGE_NAME"
-        if [ -z "$TEMP_IMAGE_NAME" ]; then
-          echo "Error: TEMP_IMAGE_NAME is not set."
-          exit 1
-        fi
         IFS=',' read -ra TAGS <<< "${{ inputs.image_tags }}"
         for tag in "${TAGS[@]}"; do
-          echo "Tagging image with tag: $tag"
-          docker tag $TEMP_IMAGE_NAME ${{ inputs.registry }}/${{ inputs.project_id }}/${{ inputs.repository }}/${{ inputs.image_name }}:$tag
+          docker tag ${{ inputs.registry }}/${{ inputs.project_id }}/${{ inputs.repository }}/${{ inputs.image_name }}:${{ inputs.stage }} ${{ inputs.registry }}/${{ inputs.project_id }}/${{ inputs.repository }}/${{ inputs.image_name }}:$tag
           docker push ${{ inputs.registry }}/${{ inputs.project_id }}/${{ inputs.repository }}/${{ inputs.image_name }}:$tag
         done
       shell: bash
