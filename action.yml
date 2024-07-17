@@ -1,4 +1,4 @@
-name: 'Push Docker Image to GAR'
+name: 'Push Docker Image to GAR by github action'
 description: 'Builds and pushes a Docker image to Google Artifact Registry'
 inputs:
   gcloud_service_key:
