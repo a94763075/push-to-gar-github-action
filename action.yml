@@ -55,13 +55,20 @@ runs:
           TARGET_ARG="--target ${{ inputs.target }}"
         fi
         TEMP_IMAGE_NAME="${{ inputs.registry }}/${{ inputs.project_id }}/${{ inputs.repository }}/${{ inputs.image_name }}:temp"
+        echo "Building Docker image with TEMP_IMAGE_NAME: $TEMP_IMAGE_NAME"
         docker build $TARGET_ARG . -f ${{ inputs.dockerfile }} -t $TEMP_IMAGE_NAME $DOCKER_BUILD_ARGS
       shell: bash
 
     - name: Push Docker Image
       run: |
+        echo "Pushing Docker image with TEMP_IMAGE_NAME: $TEMP_IMAGE_NAME"
+        if [ -z "$TEMP_IMAGE_NAME" ]; then
+          echo "Error: TEMP_IMAGE_NAME is not set."
+          exit 1
+        fi
         IFS=',' read -ra TAGS <<< "${{ inputs.image_tags }}"
         for tag in "${TAGS[@]}"; do
+          echo "Tagging image with tag: $tag"
           docker tag $TEMP_IMAGE_NAME ${{ inputs.registry }}/${{ inputs.project_id }}/${{ inputs.repository }}/${{ inputs.image_name }}:$tag
           docker push ${{ inputs.registry }}/${{ inputs.project_id }}/${{ inputs.repository }}/${{ inputs.image_name }}:$tag
         done
