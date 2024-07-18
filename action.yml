@@ -29,6 +29,11 @@ inputs:
     description: 'The stage of the deployment'
     required: false
     default: 'dev'
+  target:
+    description: 'The target stage to stop the build at'
+    required: false
+    default: ''
+    
 runs:
   using: 'composite'
   steps:
@@ -53,8 +58,15 @@ runs:
             DOCKER_BUILD_ARGS="$DOCKER_BUILD_ARGS --build-arg $arg"
           done
         fi
-        docker build . -f ${{ inputs.dockerfile }} -t ${{ inputs.registry }}/${{ inputs.project_id }}/${{ inputs.repository }}/${{ inputs.image_name }}:${{ inputs.stage }} $DOCKER_BUILD_ARGS
+
+        TARGET_ARG=""
+        if [ -n "${{ inputs.target }}" ]; then
+          TARGET_ARG="--target ${{ inputs.target }}"
+        fi
+
+        docker build . -f ${{ inputs.dockerfile }} -t ${{ inputs.registry }}/${{ inputs.project_id }}/${{ inputs.repository }}/${{ inputs.image_name }}:${{ inputs.stage }} $DOCKER_BUILD_ARGS $TARGET_ARG
       shell: bash
+      
 
     - name: Push Docker Image
       run: |
