@@ -47,10 +47,12 @@ runs:
     - name: Build Docker Image
       run: |
         DOCKER_BUILD_ARGS=""
-        IFS=',' read -ra ARGS <<< "${{ inputs.build_args }}"
-        for arg in "${ARGS[@]}"; do
-          DOCKER_BUILD_ARGS="$DOCKER_BUILD_ARGS --build-arg $arg"
-        done
+        if [ -n "${{ inputs.build_args }}" ]; then
+          IFS=',' read -ra ARGS <<< "${{ inputs.build_args }}"
+          for arg in "${ARGS[@]}"; do
+            DOCKER_BUILD_ARGS="$DOCKER_BUILD_ARGS --build-arg $arg"
+          done
+        fi
         docker build . -f ${{ inputs.dockerfile }} -t ${{ inputs.registry }}/${{ inputs.project_id }}/${{ inputs.repository }}/${{ inputs.image_name }}:${{ inputs.stage }} $DOCKER_BUILD_ARGS
       shell: bash
 
