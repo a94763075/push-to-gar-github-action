@@ -58,14 +58,14 @@ runs:
         if [ -n "${{ inputs.build_args }}" ]; then
           IFS=',' read -ra ARGS <<< "${{ inputs.build_args }}"
           for arg in "${ARGS[@]}"; do
-            DOCKER_BUILD_ARGS="$DOCKER_BUILD_ARGS --build-arg $arg"
+            DOCKER_BUILD_ARGS="$DOCKER_BUILD_ARGS --build-arg \"$arg\""
           done
         fi
 
         if [ -n "${{ inputs.build_args_by_newline }}" ]; then
           while IFS= read -r arg; do
             if [ -n "$arg" ]; then
-              DOCKER_BUILD_ARGS="$DOCKER_BUILD_ARGS --build-arg $arg"
+              DOCKER_BUILD_ARGS="$DOCKER_BUILD_ARGS --build-arg \"$arg\""
             fi
           done <<< "${{ inputs.build_args_by_newline }}"
         fi
