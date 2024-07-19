@@ -36,6 +36,10 @@ inputs:
     description: 'The target stage to stop the build at'
     required: false
     default: ''
+  free_docker_build_parameter:
+    description: 'Custom Docker build parameters'
+    required: false
+    default: ''
 
 runs:
   using: 'composite'
@@ -54,26 +58,6 @@ runs:
 
     - name: Build Docker Image
       run: |
-        # Encode function
-        encode_args() {
-          while IFS= read -r line; do
-            if [ -n "$line" ]; then
-              key="${line%%=*}"
-              value="${line#*=}"
-              encoded_value=$(echo -n "$value" | base64 -w 0)
-              echo "${key}=${encoded_value}"
-            fi
-          done
-        }
-
-        # Decode function
-        decode_arg() {
-          key="${1%%=*}"
-          encoded_value="${1#*=}"
-          decoded_value=$(echo -n "$encoded_value" | base64 -d)
-          echo "${key}=${decoded_value}"
-        }
-
         DOCKER_BUILD_ARGS=""
         if [ -n "${{ inputs.build_args }}" ]; then
           IFS=',' read -ra ARGS <<< "${{ inputs.build_args }}"
@@ -83,16 +67,11 @@ runs:
         fi
 
         if [ -n "${{ inputs.build_args_by_newline }}" ]; then
-          # Encode the input
-          encoded_args=$(echo "${{ inputs.build_args_by_newline }}" | encode_args)
-          
-          # Process encoded args
           while IFS= read -r arg; do
             if [ -n "$arg" ]; then
-              decoded_arg=$(decode_arg "$arg")
-              DOCKER_BUILD_ARGS="$DOCKER_BUILD_ARGS --build-arg \"$decoded_arg\""
+              DOCKER_BUILD_ARGS="$DOCKER_BUILD_ARGS --build-arg \"$arg\""
             fi
-          done <<< "$encoded_args"
+          done <<< "${{ inputs.build_args_by_newline }}"
         fi
 
         TARGET_ARG=""
@@ -100,7 +79,7 @@ runs:
           TARGET_ARG="--target ${{ inputs.target }}"
         fi
 
-        eval docker build . -f ${{ inputs.dockerfile }} -t ${{ inputs.registry }}/${{ inputs.project_id }}/${{ inputs.repository }}/${{ inputs.image_name }}:${{ inputs.stage }} $DOCKER_BUILD_ARGS $TARGET_ARG
+        docker build . -f ${{ inputs.dockerfile }} -t ${{ inputs.registry }}/${{ inputs.project_id }}/${{ inputs.repository }}/${{ inputs.image_name }}:${{ inputs.stage }} $DOCKER_BUILD_ARGS $TARGET_ARG ${{ inputs.free_docker_build_parameter }}
       shell: bash
 
     - name: Push Docker Image
