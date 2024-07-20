@@ -11,7 +11,7 @@ This GitHub Action builds and pushes a Docker image to Google Artifact Registry 
 | `registry`               | The GAR registry location                             | true     | -       |
 | `repository`             | The GAR repository name                               | true     | -       |
 | `image_name`             | The name of the Docker image                          | true     | -       |
-| `image_tags`             | Comma-separated list of tags for the Docker image     | true     | -       |
+| `image_tags`             | Comma-separated list of tags for the Docker image, ( please tag without space like : tag_1,tag_2 not tag_1, tag_2)     | true     | -       |
 | `dockerfile`             | Path to the Dockerfile                                | true     | -       |
 | `build_args`             | Build arguments for Docker                            | false    | -       |
 | `build_args_by_newline`  | Build arguments for Docker, separated by newlines     | false    | -       |
