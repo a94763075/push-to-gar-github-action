@@ -50,7 +50,7 @@ runs:
         credentials_json: ${{ inputs.gcloud_service_key }}
 
     - name: Set up Cloud SDK
-      uses: google-github-actions/setup-gcloud@v1
+      uses: google-github-actions/setup-gcloud@v2.1.4
 
     - name: Configure Docker Client for Gcloud
       run: gcloud auth configure-docker ${{ inputs.registry }} --quiet
